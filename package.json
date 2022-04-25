@@ -1,0 +1,32 @@
+{
+  "name": "cs103a-cpa02",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JingnvAn/cs103a-cpa02.git"
+  },
+  "author": "Jingnu An",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JingnvAn/cs103a-cpa02/issues"
+  },
+  "homepage": "https://github.com/JingnvAn/cs103a-cpa02#readme",
+  "dependencies": {
+    "axios": "^0.27.0",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.6",
+    "debug": "^4.3.4",
+    "ejs": "^3.1.7",
+    "express": "^4.18.0",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.17.2",
+    "http-errors": "^2.0.0",
+    "mongoose": "^6.3.1",
+    "nodemon": "^2.0.15"
+  }
+}
