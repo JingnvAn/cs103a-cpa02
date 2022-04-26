@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios')
 
 const app = express();
 const PORT = 3000;
@@ -84,6 +85,43 @@ app.get('/about', (req, res)=> {
 app.get('/myorder', (req, res)=> {
 	res.render('myorder');
 })
+
+app.get('/recipes',
+  async (req,res,next) => {
+    try {
+      res.locals.meals = []
+      res.locals.ingredient = 'none'
+      res.render('recipes')
+    } catch (error) {
+      next(error)     
+    }
+  })
+
+  app.post('/recipes',
+  async (req,res,next) => {
+    try {
+      const response = await axios.get('http://www.themealdb.com/api/json/v1/1/filter.php?i='+req.body.ingredient)
+      res.locals.meals = response.data.meals  // list of objects {strMeal, strMealThumb, idMeal}
+      res.locals.ingredient = req.body.ingredient
+      res.render('recipes')
+      
+    } catch (error) {
+      next(error)     
+    }
+  })
+
+  app.get('/recipe/:idMeal',
+  async (req,res,next) => {
+    try {
+      const response = await axios.get('http://www.themealdb.com/api/json/v1/1/lookup.php?i='+req.params.idMeal)
+      res.locals.meal = response.data.meals[0]  // 
+      console.dir(res.locals.meal)
+      res.render('recipe')
+      
+    } catch (error) {
+      next(error)     
+    }
+  })
 
 app.listen(PORT, (error) =>{
 	if(!error)
