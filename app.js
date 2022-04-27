@@ -24,6 +24,7 @@ mongoose.connect(mongodb_URI, { useNewUrlParser: true} );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function(){ console.log("Success! Connected to mongoDB")});
+const Item = require("./models/Item");
 
 //it specifies that the app will be using EJS as our view engine
 app.set('views', path.join(__dirname, 'views'));
@@ -97,31 +98,73 @@ app.get('/recipes',
     }
   })
 
-  app.post('/recipes',
-  async (req,res,next) => {
-    try {
-      const response = await axios.get('http://www.themealdb.com/api/json/v1/1/filter.php?i='+req.body.ingredient)
-      res.locals.meals = response.data.meals  // list of objects {strMeal, strMealThumb, idMeal}
-      res.locals.ingredient = req.body.ingredient
-      res.render('recipes')
-      
-    } catch (error) {
-      next(error)     
-    }
-  })
+app.post('/recipes',
+	async (req,res,next) => {
+	try {
+		const response = await axios.get('http://www.themealdb.com/api/json/v1/1/filter.php?i='+req.body.ingredient)
+		res.locals.meals = response.data.meals  // list of objects {strMeal, strMealThumb, idMeal}
+		res.locals.ingredient = req.body.ingredient
+		res.render('recipes')
+		
+	} catch (error) {
+		next(error)     
+	}
+})
 
-  app.get('/recipe/:idMeal',
-  async (req,res,next) => {
+app.get('/recipe/:idMeal',
+async (req,res,next) => {
+	try {
+		const response = await axios.get('http://www.themealdb.com/api/json/v1/1/lookup.php?i='+req.params.idMeal)
+		res.locals.meal = response.data.meals[0]  // 
+		console.dir(res.locals.meal)
+		res.render('recipe')
+		
+	} catch (error) {
+		next(error)     
+	}
+})
+
+app.get('/addItem', (req, res)=>{
+	res.render('addItem');
+})
+
+app.post("/addItem", async (req, res)=>{
     try {
-      const response = await axios.get('http://www.themealdb.com/api/json/v1/1/lookup.php?i='+req.params.idMeal)
-      res.locals.meal = response.data.meals[0]  // 
-      console.dir(res.locals.meal)
-      res.render('recipe')
-      
+        const {catagory,name,price,size,picture,
+            inventory,details,ingredients,warnings,directions} = req.body
+
+        // check to make sure that item name is not already taken!!
+        const duplicates = await Item.find({name})
+        
+        if (duplicates.length>0){
+            // it would be better to render a page with an error message instead of this plain text response
+            res.send("item name has already been taken, please go back and modify your input.")
+        }else {
+            // the item name has not been taken so create a new item and store it in the database           
+            const item = new Item({
+				catagory:catagory,
+                name:name,
+                price:price,
+                size:size,
+                picture:picture,
+                inventory:inventory,
+                details:details,
+                ingredients:ingredients,
+                warnings:warnings,
+                directions:directions
+            })
+			item.save(function(err){
+				if(err) {
+					res.send(error);
+				}else{
+					res.send("Successfully saved.");
+				}
+			})
+        }
     } catch (error) {
-      next(error)     
+        next(e)
     }
-  })
+})
 
 app.listen(PORT, (error) =>{
 	if(!error)
