@@ -6,14 +6,12 @@ var itemSchema = Schema({
     catagory: String,
     name: String,
     price: Number,
-    size: Number,
-    unit: String,
-    unitPrice: Number,
-    picture: Image,
+    size: String,
+    picture: Object,
     inventory: Number,
-    tag: String,
     details: String,
     ingredients: String,
     warnings: String,
     directions: String,
 })
+module.exports = mongoose.model( 'Item', itemSchema );
