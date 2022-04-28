@@ -1,0 +1,18 @@
+<h1>Search Items</h1>
+
+<form method="post" action="/searchItem">
+    Search by item name: <input type="text" name="keyword">
+    <input type="submit">
+</form>
+<br>
+<h2>Items related to "<%= keyword %>" are</h2>
+<ol>
+    <% for (item of items) {%>
+        <li class="mb-3">
+            <%= item['name'] %>,
+            $<%= item['price'] %>, 
+            <%= item['size'] %>,
+            Amount remaining: <%= item['inventory'] %><br>
+        </li>
+      <% } %> 
+</ol>

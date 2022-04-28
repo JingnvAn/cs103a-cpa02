@@ -88,7 +88,7 @@ app.get('/myorder', (req, res)=> {
 })
 
 app.get('/recipes',
-  async (req,res,next) => {
+  (req,res,next) => {
     try {
       res.locals.meals = []
       res.locals.ingredient = 'none'
@@ -166,10 +166,25 @@ app.post("/addItem", async (req, res)=>{
     }
 })
 
+app.get("/searchItem", (req, res, next)=> {
+  res.locals.items = [];
+  res.locals.keyword = " ";
+  res.render("searchItem");
+})
+
+app.post("/searchItem", async (req, res, next)=> {
+  console.log(req.body)
+  const keyword = req.body.keyword
+  res.locals.keyword = keyword
+  const items = await Item.find({ name: { $regex: keyword } });
+  res.locals.items = items;
+  res.render("searchItem");
+})
+
 app.listen(PORT, (error) =>{
 	if(!error)
 		console.log("Success! App is running on port " + PORT);
 	else
-        console.log("Error!! ", error);	
+    console.log("Error!! ", error);	
 	}
 );
