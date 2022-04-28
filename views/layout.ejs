@@ -34,21 +34,26 @@
             </li>
 
             <li clas="nav-item">
-                <a class="nav-link" href="/recipes">Food Menu</a>
+                <a class="nav-link" href="/recipes">Search Recipes</a>
             </li>
-
+            
+            <li class="nav-item">
+              <a class="nav-link" href="/searchItem">Search Items</a>
+            </li>
             
             <% if (!loggedIn) {%>
             <li class="nav-item">
               <a class="nav-link" href="/login">Login/Signup</a>
             </li>
             <% } else { %>
-
+              <% if (username=="jingnuan@brandeis.edu") { %>
+                <li class="nav-item">
+                  <a class="nav-link" href="/addItem">Add Item [Admin Only]</a>
+                </li> 
+              <% } %> 
               <li class="nav-item">
                 <a class="nav-link" href="/myorder">My Order</a>
-              </li>
-            
-              
+              </li>              
               <li class="nav-item">
                 <a class="nav-link" href="/logout">Logout <%= username %></a>
               </li>
