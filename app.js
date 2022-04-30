@@ -14,6 +14,7 @@ const session = require('express-session'); // handle sessions using cookies
 const bodyParser = require('body-parser') // handle HTML from input
 const debug = require('debug')('personalapp:server');
 const layouts = require('express-ejs-layouts');
+var fs = require('fs');
 
 /*************************
  * connect to the database
@@ -24,7 +25,12 @@ mongoose.connect(mongodb_URI, { useNewUrlParser: true} );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function(){ console.log("Success! Connected to mongoDB")});
+
+/**
+ * Import Models to communicate with the database
+ */
 const Item = require("./models/Item");
+const ImgModel = require("./models/Image")
 
 //it specifies that the app will be using EJS as our view engine
 app.set('views', path.join(__dirname, 'views'));
@@ -52,13 +58,22 @@ app.use(
   })
 );
 
+//set up multer for storing uploaded files
+var multer = require('multer'); 
+var storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now())
+    }
+});
+  
+var upload = multer({ storage: storage });
+
 /*****************************************************
 * Defining the routes the Express server will respond to
 ******************************************************/
-// app.get('/test', (req, res)=>{
-//     res.status(200);
-//     res.send("Welcome to BunnyBearBao, a market for home-grown food and handcrafts!")
-// })
 
 // here is the code which handles all /login /signin /logout routes
 const auth = require('./routes/auth');
@@ -125,12 +140,20 @@ async (req,res,next) => {
 })
 
 app.get('/addItem', (req, res)=>{
-	res.render('addItem');
+  ImgModel.find({}, (err, items) => {
+    if (err) {
+        console.log(err);
+        res.status(500).send('An error occurred', err);
+    }
+    else {
+        res.render('addItem', { items: items });
+    }
+  });
 })
 
-app.post("/addItem", async (req, res)=>{
+app.post("/addItem", upload.single('image'), async (req, res, next)=>{
     try {
-        const {catagory,name,price,size,picture,
+        const {catagory,name,price,size,image,
             inventory,details,ingredients,warnings,directions} = req.body
 
         // check to make sure that item name is not already taken!!
@@ -141,42 +164,57 @@ app.post("/addItem", async (req, res)=>{
             res.send("item name has already been taken, please go back and modify your input.")
         }else {
             // the item name has not been taken so create a new item and store it in the database           
-            const item = new Item({
-				catagory:catagory,
+            const newItem = new Item({
+                catagory:catagory,
                 name:name,
                 price:price,
                 size:size,
-                picture:picture,
+                picture:image,
                 inventory:inventory,
                 details:details,
                 ingredients:ingredients,
                 warnings:warnings,
                 directions:directions
             })
-			item.save(function(err){
-				if(err) {
-					res.send(error);
-				}else{
-					res.send("Successfully saved.");
-				}
+            const obj = {
+              name: name,
+              desc: details,
+              img: {
+                  data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
+                  contentType: 'image/png'
+              }
+            }
+
+            ImgModel.create(obj, (err, item)=>{
+              if(err) console.log(err);
+              else {
+                item.save();
+              }
+            })
+
+            newItem.save(function(err){
+              if(err) {
+                res.send(error);
+              }else{
+                res.send("Successfully saved.");
+              }
 			})
         }
     } catch (error) {
-        next(e)
+        next(error)
     }
 })
 
 app.get("/searchItem", (req, res, next)=> {
   res.locals.items = [];
-  res.locals.keyword = " ";
+  res.locals.keyword = "none";
   res.render("searchItem");
 })
 
 app.post("/searchItem", async (req, res, next)=> {
-  console.log(req.body)
   const keyword = req.body.keyword
-  res.locals.keyword = keyword
   const items = await Item.find({ name: { $regex: keyword } });
+  res.locals.keyword = keyword
   res.locals.items = items;
   res.render("searchItem");
 })
