@@ -15,3 +15,7 @@ then,
 
 ### Description
 This app is intended to be an online ordering app. It allows the owner to add items to the online shop, and allow user's to browse what is available at this shop. 
+
+### Screenshots
+![add-items](/public/images/a%20Add%20a%20new%20Inventory.jpg)
+![display-items](./public/images/BunnyBearBao%20Online%20Market.jpg)
