@@ -3,7 +3,7 @@ const express = require('express');
 const axios = require('axios')
 
 const app = express();
-const PORT = 3000;
+const port = process.env.PORT || "5151";
 
 /**************************************
  * Load packages to support the server
@@ -22,10 +22,11 @@ const layouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
 // const mongodb_URI = 'mongodb://localhost:27017/bunnybearbao';
 const mongodb_URI = process.env.mongodb_URI;
-mongoose.connect(mongodb_URI, { useNewUrlParser: true} );
+mongoose.connect(mongodb_URI, { useNewUrlParser: true, useUnifiedTopology: true} );
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function(){ console.log("Success! Connected to mongoDB")});
+
 const Item = require("./models/Item");
 
 //it specifies that the app will be using EJS as our view engine
@@ -57,10 +58,6 @@ app.use(
 /*****************************************************
 * Defining the routes the Express server will respond to
 ******************************************************/
-// app.get('/test', (req, res)=>{
-//     res.status(200);
-//     res.send("Welcome to BunnyBearBao, a market for home-grown food and handcrafts!")
-// })
 
 // here is the code which handles all /login /signin /logout routes
 const auth = require('./routes/auth');
@@ -183,9 +180,9 @@ app.post("/searchItem", async (req, res, next)=> {
   res.render("searchItem");
 })
 
-app.listen(PORT, (error) =>{
+app.listen(port, (error) =>{
 	if(!error)
-		console.log("Success! App is running on port " + PORT);
+		console.log("Success! App is running on port " + port);
 	else
     console.log("Error!! ", error);	
 	}
